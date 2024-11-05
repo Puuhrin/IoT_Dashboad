@@ -84,14 +84,22 @@
         <h3>Humedad Actual</h3>
         <p id="humedad-value">-- %</p>
       </div>
+      <div class="card" id="current-aire">
+        <i class="fa-solid fa-droplet fa-icons-color fa-xl"></i>
+        <h3>Calidad del Aire Actual</h3>
+        <p id="aire-value">-- %</p>
+      </div>
       <div class="card" id="max-values">
         <i class="fa-solid fa-temperature-high fa-icons-color fa-xl"></i>
         <h3>Valores Máximos</h3>
         <p>Temperatura Máxima: <span id="max-temperatura">-- °C</span></p>
         <p>Humedad Máxima: <span id="max-humedad">-- %</span></p>
+        <p>Aire Mas Sucio: <span id="max-aire">-- °C</span></p>
+        
       </div>
     </div>
     <div id="charts">
+      <canvas id="aireChart"></canvas>  
       <canvas id="temperaturaChart"></canvas>
       <canvas id="humedadChart"></canvas>
     </div>
@@ -112,27 +120,31 @@
 
       let maxtemperatura = -Infinity;
       let maxhumedad = -Infinity;
+      let maxaire = -Infinity;
 
       function updateDashboard(data) {
         const temperatura = data.temperaturaValue;
         const humedad = data.humedadValue;
+        const aire = data.aire.Value;
 
         // Actualizar valores actuales
         document.getElementById(
           "temperatura-value"
         ).textContent = `${temperatura} °C`;
         document.getElementById("humedad-value").textContent = `${humedad} %`;
+        document.getElementById("aire-value").textContent = `${aire} %`;
 
         // Actualizar valores máximos
         if (temperatura > maxtemperatura) maxtemperatura = temperatura;
         if (humedad > maxhumedad) maxhumedad = humedad;
+        if (aire > maxaire) maxaire = aire;
         document.getElementById(
           "max-temperatura"
         ).textContent = `${maxtemperatura} °C`;
         document.getElementById("max-humedad").textContent = `${maxhumedad} %`;
 
         // Actualizar gráficos
-        updateCharts(data.history, temperatura, humedad);
+        updateCharts(data.history, temperatura, humedad, aire);
       }
 
       // Configuración de Chart.js
@@ -142,7 +154,9 @@
       const humedadCtx = document
         .getElementById("humedadChart")
         .getContext("2d");
-
+      const aireCtx = document
+        .getElementById("aireChart")
+        .getContext("2d");
       const temperaturaChart = new Chart(temperaturaCtx, {
         type: "line",
         data: {
@@ -203,7 +217,37 @@
         },
       });
 
-      function updateCharts(history, temperatura, humedad) {
+      const aireChart = new Chart(aireCtx, {
+        type: "line",
+        data: {
+          labels: [],
+          datasets: [
+            {
+              label: "Aire (%)",
+              data: [],
+              borderColor: "rgba(54, 162, 235, 1)",
+              borderWidth: 2,
+              fill: false,
+            },
+          ],
+        },
+        options: {
+          scales: {
+            x: {
+              type: "time",
+              time: { unit: "minute" },
+              adapters: {
+                date: {
+                  locale: moment.locale(),
+                },
+              },
+            },
+            y: { beginAtZero: false },
+          },
+        },
+      });      
+      
+      function updateCharts(history, temperatura, humedad, aire) {
         const timestamps = history.map((item) => new Date(item.timestamp));
         const temperaturas = history.map((item, index) =>
           index === history.length - 1
@@ -213,7 +257,9 @@
         const humedades = history.map((item, index) =>
           index === history.length - 1 ? humedad : item.humedad || humedad
         );
-
+        const aires = history.map((item, index) =>
+          index === history.length - 1 ? aire : item.aire || aire
+        );
         temperaturaChart.data.labels = timestamps;
         temperaturaChart.data.datasets[0].data = temperaturas;
         temperaturaChart.update();
@@ -221,6 +267,10 @@
         humedadChart.data.labels = timestamps;
         humedadChart.data.datasets[0].data = humedades;
         humedadChart.update();
+        
+        aireChart.data.labels = timestamps;
+        aireChart.data.datasets[0].data = aires;
+        aireChart.update();
       }
 
       // Actualizar datos cada 30 segundos
