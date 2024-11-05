@@ -93,7 +93,7 @@
     </div>
     <div id="charts">
       <canvas id="temperaturaChart"></canvas>
-      <canvas id="humedadyChart"></canvas>
+      <canvas id="humedadChart"></canvas>
     </div>
 
     <script>
@@ -129,7 +129,7 @@
         document.getElementById(
           "max-temperatura"
         ).textContent = `${maxtemperatura} °C`;
-        document.getElementById("max-humedad").textContent = `${maxhumedady} %`;
+        document.getElementById("max-humedad").textContent = `${maxhumedad} %`;
 
         // Actualizar gráficos
         updateCharts(data.history, temperatura, humedad);
