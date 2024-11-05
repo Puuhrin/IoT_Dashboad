@@ -77,7 +77,7 @@
           class="fa-solid fa-icons-color fa-xl fa-temperature-three-quarters"
         ></i>
         <h3>Temperatura Actual</h3>
-        <p id="tempertaturaValue">-- °C</p>
+        <p id="temperatura-value">-- °C</p>
       </div>
       <div class="card" id="current-humedad">
         <i class="fa-solid fa-droplet fa-icons-color fa-xl"></i>
@@ -129,7 +129,7 @@
 
         // Actualizar valores actuales
         document.getElementById(
-          "tempertaturaValue"
+          "temperatura-value"
         ).textContent = `${temperatura} °C`;
         document.getElementById("humedad-value").textContent = `${humedad} %`;
         document.getElementById("aire-value").textContent = `${aire} %`;
