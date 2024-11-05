@@ -1,179 +1,231 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Sensor Dashboard</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
+      integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/moment@2.29.1"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@1.0.0"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f0f2f5;
-        }
-        h2 {
-            text-align: center;
-        }
-        .dashboard {
-            display: flex;
-            justify-content: space-around;
-            flex-wrap: wrap;
-        }
-        .card {
-            background: #ffffff;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            margin: 20px;
-            width: 300px;
-            text-align: center;
-        }
-        #charts {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        canvas {
-            max-width: 500px;
-            margin: 20px;
-        }
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background-color: #151515;
+      }
+      .fa-icons-color {
+        color: rgb(228, 228, 228);
+      }
+      h2 {
+        padding-top: 100px;
+        color: #ffffff;
+        text-align: center;
+      }
+      h3 {
+        color: #ffffff;
+      }
+      p {
+        margin: 0;
+        color: #cfcfcf;
+      }
+      .dashboard {
+        width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+      .card {
+        background: rgba(75, 75, 75, 0.253);
+        border: 1px solid rgb(95, 95, 95);
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        padding: 40px 20px;
+        margin: 20px;
+        width: 300px;
+        text-align: center;
+      }
+
+      .card:hover {
+        background: rgba(116, 116, 116, 0.253);
+        transition: 200ms ease-in 50ms;
+      }
+
+      #charts {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+      canvas {
+        max-width: 500px;
+        margin: 20px;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <h2>Sensor Dashboard</h2>
     <div class="dashboard">
-        <div class="card" id="current-temperatura">
-            <h3>Temperatura Actual</h3>
-            <p id="temperatura-value">-- °C</p>
-        </div>
-        <div class="card" id="current-humedad">
-            <h3>Humedad Actual</h3>
-            <p id="humedad-value">-- %</p>
-        </div>
-        <div class="card" id="max-values">
-            <h3>Valores Máximos</h3>
-            <p>Temperatura Máxima: <span id="max-temperatura">-- °C</span></p>
-            <p>Humedad Máxima: <span id="max-humedad">-- %</span></p>
-        </div>
+      <div class="card" id="current-temperatura">
+        <i
+          class="fa-solid fa-icons-color fa-xl fa-temperature-three-quarters"
+        ></i>
+        <h3>Temperatura Actual</h3>
+        <p id="temperatura-value">-- °C</p>
+      </div>
+      <div class="card" id="current-humedad">
+        <i class="fa-solid fa-droplet fa-icons-color fa-xl"></i>
+        <h3>Humedad Actual</h3>
+        <p id="humedad-value">-- %</p>
+      </div>
+      <div class="card" id="max-values">
+        <i class="fa-solid fa-temperature-high fa-icons-color fa-xl"></i>
+        <h3>Valores Máximos</h3>
+        <p>Temperatura Máxima: <span id="max-temperatura">-- °C</span></p>
+        <p>Humedad Máxima: <span id="max-humedad">-- %</span></p>
+      </div>
     </div>
     <div id="charts">
-        <canvas id="temperaturaChart"></canvas>
-        <canvas id="humedadyChart"></canvas>
+      <canvas id="temperaturaChart"></canvas>
+      <canvas id="humedadyChart"></canvas>
     </div>
 
     <script>
-        const apiUrl = 'https://bn1nmsg30c.execute-api.us-east-2.amazonaws.com/FuncionHumedad?device_id=RakBonito';
+      const apiUrl =
+        "https://bn1nmsg30c.execute-api.us-east-2.amazonaws.com/FuncionHumedad?device_id=RakBonito";
 
-        async function fetchSensorData() {
-            try {
-                const response = await fetch(apiUrl);
-                const data = await response.json();
-                updateDashboard(data);
-            } catch (error) {
-                console.error('Error fetching sensor data:', error);
-            }
+      async function fetchSensorData() {
+        try {
+          const response = await fetch(apiUrl);
+          const data = await response.json();
+          updateDashboard(data);
+        } catch (error) {
+          console.error("Error fetching sensor data:", error);
         }
+      }
 
-        let maxtemperatura = -Infinity;
-        let maxhumedad = -Infinity;
+      let maxtemperatura = -Infinity;
+      let maxhumedad = -Infinity;
 
-        function updateDashboard(data) {
-            const temperatura = data.temperaturaValue;
-            const humedad = data.humedadValue;
+      function updateDashboard(data) {
+        const temperatura = data.temperaturaValue;
+        const humedad = data.humedadValue;
 
-            // Actualizar valores actuales
-            document.getElementById('temperatura-value').textContent = `${temperatura} °C`;
-            document.getElementById('humedad-value').textContent = `${humedad} %`;
+        // Actualizar valores actuales
+        document.getElementById(
+          "temperatura-value"
+        ).textContent = `${temperatura} °C`;
+        document.getElementById("humedad-value").textContent = `${humedad} %`;
 
-            // Actualizar valores máximos
-            if (temperatura > maxtemperatura) maxtemperatura = temperatura;
-            if (humedad > maxhumedad) maxhumedad = humedad;
-            document.getElementById('max-temperatura').textContent = `${maxtemperatura} °C`;
-            document.getElementById('max-humedad').textContent = `${maxhumedady} %`;
+        // Actualizar valores máximos
+        if (temperatura > maxtemperatura) maxtemperatura = temperatura;
+        if (humedad > maxhumedad) maxhumedad = humedad;
+        document.getElementById(
+          "max-temperatura"
+        ).textContent = `${maxtemperatura} °C`;
+        document.getElementById("max-humedad").textContent = `${maxhumedady} %`;
 
-            // Actualizar gráficos
-            updateCharts(data.history, temperatura, humedad);
-        }
+        // Actualizar gráficos
+        updateCharts(data.history, temperatura, humedad);
+      }
 
-        // Configuración de Chart.js
-        const temperaturaCtx = document.getElementById('temperaturaChart').getContext('2d');
-        const humedadCtx = document.getElementById('humedadChart').getContext('2d');
+      // Configuración de Chart.js
+      const temperaturaCtx = document
+        .getElementById("temperaturaChart")
+        .getContext("2d");
+      const humedadCtx = document
+        .getElementById("humedadChart")
+        .getContext("2d");
 
-        const temperaturaChart = new Chart(temperaturaCtx, {
-            type: 'line',
-            data: {
-                labels: [],
-                datasets: [{
-                    label: 'Temperatura (°C)',
-                    data: [],
-                    borderColor: 'rgba(255, 99, 132, 1)',
-                    borderWidth: 2,
-                    fill: false
-                }]
+      const temperaturaChart = new Chart(temperaturaCtx, {
+        type: "line",
+        data: {
+          labels: [],
+          datasets: [
+            {
+              label: "Temperatura (°C)",
+              data: [],
+              borderColor: "rgba(255, 99, 132, 1)",
+              borderWidth: 2,
+              fill: false,
             },
-            options: {
-                scales: {
-                    x: { 
-                        type: 'time', 
-                        time: { unit: 'minute' },
-                        adapters: {
-                            date: {
-                                locale: moment.locale()
-                            }
-                        }
-                    },
-                    y: { beginAtZero: false }
-                }
-            }
-        });
-
-        const humedadChart = new Chart(humedadCtx, {
-            type: 'line',
-            data: {
-                labels: [],
-                datasets: [{
-                    label: 'Humedad (%)',
-                    data: [],
-                    borderColor: 'rgba(54, 162, 235, 1)',
-                    borderWidth: 2,
-                    fill: false
-                }]
+          ],
+        },
+        options: {
+          scales: {
+            x: {
+              type: "time",
+              time: { unit: "minute" },
+              adapters: {
+                date: {
+                  locale: moment.locale(),
+                },
+              },
             },
-            options: {
-                scales: {
-                    x: { 
-                        type: 'time', 
-                        time: { unit: 'minute' },
-                        adapters: {
-                            date: {
-                                locale: moment.locale()
-                            }
-                        }
-                    },
-                    y: { beginAtZero: false }
-                }
-            }
-        });
+            y: { beginAtZero: false },
+          },
+        },
+      });
 
-        function updateCharts(history, temperatura, humedad) {
-            const timestamps = history.map(item => new Date(item.timestamp));
-            const temperaturas = history.map((item, index) => index === history.length - 1 ? temperatura : (item.temperatura || temperatura));
-            const humedades = history.map((item, index) => index === history.length - 1 ? humedad : (item.humedad || humedad));
+      const humedadChart = new Chart(humedadCtx, {
+        type: "line",
+        data: {
+          labels: [],
+          datasets: [
+            {
+              label: "Humedad (%)",
+              data: [],
+              borderColor: "rgba(54, 162, 235, 1)",
+              borderWidth: 2,
+              fill: false,
+            },
+          ],
+        },
+        options: {
+          scales: {
+            x: {
+              type: "time",
+              time: { unit: "minute" },
+              adapters: {
+                date: {
+                  locale: moment.locale(),
+                },
+              },
+            },
+            y: { beginAtZero: false },
+          },
+        },
+      });
 
-            temperaturaChart.data.labels = timestamps;
-            temperaturaChart.data.datasets[0].data = temperaturas;
-            temperaturaChart.update();
+      function updateCharts(history, temperatura, humedad) {
+        const timestamps = history.map((item) => new Date(item.timestamp));
+        const temperaturas = history.map((item, index) =>
+          index === history.length - 1
+            ? temperatura
+            : item.temperatura || temperatura
+        );
+        const humedades = history.map((item, index) =>
+          index === history.length - 1 ? humedad : item.humedad || humedad
+        );
 
-            humedadChart.data.labels = timestamps;
-            humedadChart.data.datasets[0].data = humedades;
-            humedadChart.update();
-        }
+        temperaturaChart.data.labels = timestamps;
+        temperaturaChart.data.datasets[0].data = temperaturas;
+        temperaturaChart.update();
 
-        // Actualizar datos cada 30 segundos
-        setInterval(fetchSensorData, 30000);
-        fetchSensorData();
+        humedadChart.data.labels = timestamps;
+        humedadChart.data.datasets[0].data = humedades;
+        humedadChart.update();
+      }
+
+      // Actualizar datos cada 30 segundos
+      setInterval(fetchSensorData, 30000);
+      fetchSensorData();
     </script>
-</body>
+  </body>
 </html>
