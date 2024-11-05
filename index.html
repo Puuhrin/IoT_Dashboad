@@ -44,9 +44,9 @@
 <body>
     <h2>Sensor Dashboard</h2>
     <div class="dashboard">
-        <div class="card" id="current-temperature">
+        <div class="card" id="current-temperatura">
             <h3>Temperatura Actual</h3>
-            <p id="temperature-value">-- °C</p>
+            <p id="temperatura-value">-- °C</p>
         </div>
         <div class="card" id="current-humidity">
             <h3>Humedad Actual</h3>
@@ -54,12 +54,12 @@
         </div>
         <div class="card" id="max-values">
             <h3>Valores Máximos</h3>
-            <p>Temperatura Máxima: <span id="max-temperature">-- °C</span></p>
+            <p>Temperatura Máxima: <span id="max-temperatura">-- °C</span></p>
             <p>Humedad Máxima: <span id="max-humidity">-- %</span></p>
         </div>
     </div>
     <div id="charts">
-        <canvas id="temperatureChart"></canvas>
+        <canvas id="temperaturaChart"></canvas>
         <canvas id="humidityChart"></canvas>
     </div>
 
@@ -76,32 +76,32 @@
             }
         }
 
-        let maxTemperature = -Infinity;
+        let maxtemperatura = -Infinity;
         let maxHumidity = -Infinity;
 
         function updateDashboard(data) {
-            const temperature = data.temperatureValue;
+            const temperatura = data.temperaturaValue;
             const humidity = data.humidityValue;
 
             // Actualizar valores actuales
-            document.getElementById('temperature-value').textContent = `${temperature} °C`;
+            document.getElementById('temperatura-value').textContent = `${temperatura} °C`;
             document.getElementById('humidity-value').textContent = `${humidity} %`;
 
             // Actualizar valores máximos
-            if (temperature > maxTemperature) maxTemperature = temperature;
+            if (temperatura > maxtemperatura) maxtemperatura = temperatura;
             if (humidity > maxHumidity) maxHumidity = humidity;
-            document.getElementById('max-temperature').textContent = `${maxTemperature} °C`;
+            document.getElementById('max-temperatura').textContent = `${maxtemperatura} °C`;
             document.getElementById('max-humidity').textContent = `${maxHumidity} %`;
 
             // Actualizar gráficos
-            updateCharts(data.history, temperature, humidity);
+            updateCharts(data.history, temperatura, humidity);
         }
 
         // Configuración de Chart.js
-        const temperatureCtx = document.getElementById('temperatureChart').getContext('2d');
+        const temperaturaCtx = document.getElementById('temperaturaChart').getContext('2d');
         const humidityCtx = document.getElementById('humidityChart').getContext('2d');
 
-        const temperatureChart = new Chart(temperatureCtx, {
+        const temperaturaChart = new Chart(temperaturaCtx, {
             type: 'line',
             data: {
                 labels: [],
@@ -157,14 +157,14 @@
             }
         });
 
-        function updateCharts(history, temperature, humidity) {
+        function updateCharts(history, temperatura, humidity) {
             const timestamps = history.map(item => new Date(item.timestamp));
-            const temperatures = history.map((item, index) => index === history.length - 1 ? temperature : (item.temperature || temperature));
+            const temperaturas = history.map((item, index) => index === history.length - 1 ? temperatura : (item.temperatura || temperatura));
             const humidities = history.map((item, index) => index === history.length - 1 ? humidity : (item.humidity || humidity));
 
-            temperatureChart.data.labels = timestamps;
-            temperatureChart.data.datasets[0].data = temperatures;
-            temperatureChart.update();
+            temperaturaChart.data.labels = timestamps;
+            temperaturaChart.data.datasets[0].data = temperaturas;
+            temperaturaChart.update();
 
             humidityChart.data.labels = timestamps;
             humidityChart.data.datasets[0].data = humidities;
