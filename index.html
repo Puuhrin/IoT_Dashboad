@@ -141,8 +141,8 @@
         document.getElementById(
           "max-temperatura"
         ).textContent = `${maxtemperatura} °C`;
-        document.getElementById("max-humedad").textContent = `${maxhumedad} %`;
-        document.getElementById("max-aire").textContent = `${maxaire} %`;
+        document.getElementById("max-humedad").textContent = `${maxhumedad} °C`;
+        document.getElementById("max-aire").textContent = `${maxaire} °C`;       
 
         // Actualizar gráficos
         updateCharts(data.history, temperatura, humedad, aire);
