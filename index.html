@@ -125,7 +125,7 @@
       function updateDashboard(data) {
         const temperatura = data.temperaturaValue;
         const humedad = data.humedadValue;
-        const aire = data.aire.Value;
+        const aire = data.aireValue;
 
         // Actualizar valores actuales
         document.getElementById(
@@ -142,6 +142,7 @@
           "max-temperatura"
         ).textContent = `${maxtemperatura} °C`;
         document.getElementById("max-humedad").textContent = `${maxhumedad} %`;
+        document.getElementById("max-aire").textContent = `${maxaire} %`;
 
         // Actualizar gráficos
         updateCharts(data.history, temperatura, humedad, aire);
