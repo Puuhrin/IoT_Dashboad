@@ -70,12 +70,9 @@
     </style>
   </head>
   <body>
-    <h2>Sensor Dashboard</h2>
     <div class="dashboard">
       <div class="card" id="current-temperatura">
-        <i
-          class="fa-solid fa-icons-color fa-xl fa-temperatura-three-quarters"
-        ></i>
+        <i class="fa-solid fa-thermometer-half fa-icons-color fa-xl"></i>
         <h3>Temperatura Actual</h3>
         <p id="temperatura-value">-- °C</p>
       </div>
@@ -85,19 +82,19 @@
         <p id="humedad-value">-- %</p>
       </div>
       <div class="card" id="current-aire">
-        <i class="fa-solid fa-droplet fa-icons-color fa-xl"></i>
+        <i class="fa-solid fa-wind fa-icons-color fa-xl"></i>
         <h3>Calidad del Aire Actual</h3>
         <p id="aire-value">-- %</p>
       </div>
       <div class="card" id="max-values">
-        <i class="fa-solid fa-temperatura-high fa-icons-color fa-xl"></i>
+        <i class="fa-solid fa-trophy fa-icons-color fa-xl"></i>
         <h3>Valores Máximos</h3>
         <p>Temperatura Máxima: <span id="max-temperatura">-- °C</span></p>
         <p>Humedad Máxima: <span id="max-humedad">-- %</span></p>
-        <p>Aire Mas Sucio: <span id="max-aire">-- °C</span></p>
-        
+        <p>Aire Más Sucio: <span id="max-aire">-- %</span></p>
       </div>
     </div>
+    
     <div id="charts">
       <canvas id="aireChart"></canvas>  
       <canvas id="temperaturaChart"></canvas>
@@ -124,29 +121,29 @@
 
       function updateDashboard(data) {
         const temperatura = data.temperaturaValue;
-        const humedad = data.humedadValue;
-        const aire = data.aireValue;
+        const history = data.history;
+        
+        // Si los valores actuales de humedad y aire no están en la raíz, obtén el último registro del historial
+        const humedad = data.humedadValue ?? (history[history.length - 1]?.humedad ?? "N/A");
+        const aire = data.aireValue ?? (history[history.length - 1]?.aire ?? "N/A");
 
         // Actualizar valores actuales
-        document.getElementById(
-          "temperatura-value"
-        ).textContent = `${temperatura} °C`;
+        document.getElementById("temperatura-value").textContent = `${temperatura} °C`;
         document.getElementById("humedad-value").textContent = `${humedad} %`;
         document.getElementById("aire-value").textContent = `${aire} %`;
 
         // Actualizar valores máximos
         if (temperatura > maxtemperatura) maxtemperatura = temperatura;
-        if (humedad > maxhumedad) maxhumedad = humedad;
-        if (aire > maxaire) maxaire = aire;
-        document.getElementById(
-          "max-temperatura"
-        ).textContent = `${maxtemperatura} °C`;
-        document.getElementById("max-humedad").textContent = `${maxhumedad} °C`;
-        document.getElementById("max-aire").textContent = `${maxaire} °C`;       
+        if (humedad !== "N/A" && humedad > maxhumedad) maxhumedad = humedad;
+        if (aire !== "N/A" && aire > maxaire) maxaire = aire;
+
+        document.getElementById("max-temperatura").textContent = `${maxtemperatura} °C`;
+        document.getElementById("max-humedad").textContent = `${maxhumedad} %`;
+        document.getElementById("max-aire").textContent = `${maxaire} %`;
 
         // Actualizar gráficos
         updateCharts(data.history, temperatura, humedad, aire);
-      }
+    }
 
       // Configuración de Chart.js
       const temperaturaCtx = document
@@ -249,30 +246,31 @@
       });      
       
       function updateCharts(history, temperatura, humedad, aire) {
-        const timestamps = history.map((item) => new Date(item.timestamp));
-        const temperaturas = history.map((item, index) =>
-          index === history.length - 1
-            ? temperatura
-            : item.temperatura || temperatura
-        );
-        const humedades = history.map((item, index) =>
-          index === history.length - 1 ? humedad : item.humedad || humedad
-        );
-        const aires = history.map((item, index) =>
-          index === history.length - 1 ? aire : item.aire || aire
-        );
+        // Filtrar y ordenar los datos por timestamp
+        history = history
+          .filter(item => item.timestamp && item.temperatura !== undefined)
+          .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+      
+        // Extraer timestamps y datos para cada variable
+        const timestamps = history.map(item => new Date(item.timestamp));
+        const temperaturas = history.map(item => item.temperatura || temperatura);
+        const humedades = history.map(item => item.humedad || humedad);
+        const aires = history.map(item => item.aire || aire);
+      
+        // Actualizar gráficos con datos ordenados y completos
         temperaturaChart.data.labels = timestamps;
         temperaturaChart.data.datasets[0].data = temperaturas;
         temperaturaChart.update();
-
+      
         humedadChart.data.labels = timestamps;
         humedadChart.data.datasets[0].data = humedades;
         humedadChart.update();
-        
+      
         aireChart.data.labels = timestamps;
         aireChart.data.datasets[0].data = aires;
         aireChart.update();
       }
+      
 
       // Actualizar datos cada 30 segundos
       setInterval(fetchSensorData, 30000);
